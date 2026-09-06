@@ -535,7 +535,25 @@ static void t_check(bool ok, const char* what) {
   else { ++g_fail; std::cout << C_RED << "  FAIL " << what << C_RESET << "\n"; }
 }
 
-static int run_selftest() {
+static std::string resolve_sample_file(const char* argv0) {
+  // Prefer a sample next to the binary; fall back to CWD (os-independent)
+  std::string exe_dir = ".";
+  if (argv0 && *argv0) {
+    std::string_view a0{argv0};
+    auto slash = a0.find_last_of('/');
+    if (slash != std::string_view::npos) exe_dir = std::string(a0.substr(0, slash));
+  }
+  std::vector<std::string> candidates;
+  if (!exe_dir.empty() && exe_dir != ".") candidates.push_back(exe_dir + "/sample-ptype.table");
+  candidates.push_back("sample-ptype.table");
+  for (const auto& cand : candidates) {
+    std::ifstream f(cand);
+    if (f) return cand;
+  }
+  return "sample-ptype.table";
+}
+
+static int run_selftest(const char* argv0) {
   std::cout << "-- selftest: model + decoder --\n";
   t_check(ether_name(0x0800) == "IPv4", "ether 0800 -> IPv4");
   t_check(ether_name(0x86dd) == "IPv6", "ether 86dd -> IPv6");
@@ -639,7 +657,7 @@ static int run_selftest() {
   std::cout << "-- selftest: file with comments --\n";
   {
     Snapshot s;
-    bool ok = load_snapshot_file(s, "sample-ptype.table");
+    bool ok = load_snapshot_file(s, resolve_sample_file(argv0));
     t_check(ok, "sample file loads");
     if (ok) {
       t_check(s.ptypes.size() == 10, "sample has 10 handlers (comments skipped)");
@@ -732,7 +750,7 @@ int main(int argc, char** argv) {
     else if (a == "--json")    json = true;
     else if (a == "--all")     all = true;
     else if (a == "--no-color") color_flag = false;
-    else if (a == "--selftest") return run_selftest();
+    else if (a == "--selftest") return run_selftest(argv[0]);
     else if (a == "-h" || a == "--help") { print_help(); return 0; }
     else { std::cerr << "error: unknown option '" << a << "' (see --help)\n"; return 2; }
   }
