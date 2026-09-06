@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ptype-watch</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1e1e2e; font-family: 'Fira Code', monospace; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 40px 20px; }
+  .terminal {
+    background: #181825;
+    border-radius: 12px;
+    padding: 24px 28px;
+    color: #cdd6f4;
+    font-size: 13px;
+    line-height: 1.55;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    max-width: 1040px;
+    width: 100%;
+  }
+  .cyan { color: #89dceb; }
+  .green { color: #a6e3a1; }
+  .yellow { color: #f9e2af; }
+  .red { color: #f38ba8; }
+  .dim { color: #6c7086; }
+  .magenta { color: #cba6f7; }
+  .blue { color: #89b4fa; }
+  .bold { font-weight: 600; }
+  .section-title { color: #cdd6f4; font-weight: 600; margin-top: 4px; margin-bottom: 6px; }
+  .agg-row { display: flex; gap: 18px; margin-bottom: 8px; flex-wrap: wrap; }
+  .agg-label { color: #6c7086; font-size: 10.5px; }
+  .agg-value { color: #cdd6f4; font-size: 14px; font-weight: 600; }
+  table { border-collapse: collapse; margin-top: 10px; width: 100%; font-size: 12px; }
+  th { color: #6c7086; text-align: left; font-weight: 400; padding: 2px 12px 2px 0; border-bottom: 1px solid #313244; }
+  td { padding: 2px 12px 2px 0; white-space: nowrap; }
+  .cmd { background: #11111b; border-radius: 8px; padding: 12px 16px; margin-top: 14px; font-size: 12px; }
+  .cmd .line { color: #a6e3a1; }
+  .notes { margin-top: 12px; color: #6c7086; font-size: 11px; line-height: 1.55; }
+  .prompt { margin-top: 16px; color: #a6e3a1; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="terminal">
+  <div class="section-title">-- packet type registry (demo: 12 handlers, eth0 + wlan0 + wg0) --</div>
+  <div class="agg-row">
+    <div><div class="agg-label">handlers</div><div class="agg-value bold cyan">12</div></div>
+    <div><div class="agg-label">wildcard</div><div class="agg-value bold green">8</div></div>
+    <div><div class="agg-label">iface-bound</div><div class="agg-value bold yellow">4</div></div>
+    <div><div class="agg-label">in modules</div><div class="agg-value">2</div></div>
+    <div><div class="agg-label">source</div><div class="agg-value dim">demo; /proc/net/ptype</div></div>
+  </div>
+  <table>
+    <tr><th>TYPE</th><th>IFACE</th><th>FUNCTION</th><th>PROTOCOL</th></tr>
+    <tr><td class="green bold">0800</td><td>*</td><td>ip_rcv</td><td class="green">IPv4</td></tr>
+    <tr><td class="dim">0004</td><td>*</td><td>llc_rcv</td><td>LLC <span class="dim">[llc]</span></td></tr>
+    <tr><td class="yellow bold">0806</td><td>*</td><td>arp_rcv</td><td class="yellow">ARP</td></tr>
+    <tr><td class="blue bold">86dd</td><td>*</td><td>ipv6_rcv</td><td class="cyan">IPv6</td></tr>
+    <tr><td class="red bold">8100</td><td class="cyan">eth0</td><td>vlan_skb_recv</td><td class="red">VLAN</td></tr>
+    <tr><td class="dim">88cc</td><td class="cyan">eth0</td><td>eth_nodev</td><td>LLDP (link-layer discovery)</td></tr>
+    <tr><td class="magenta bold">0003</td><td>*</td><td>packet_rcv</td><td class="magenta">ALL (promisc)</td></tr>
+    <tr><td class="yellow bold">0806</td><td class="cyan">wlan0</td><td>arp_rcv</td><td class="yellow">ARP</td></tr>
+    <tr><td class="dim">88f7</td><td>*</td><td>ptp_rcv</td><td>PTP v2 <span class="dim">[ptp]</span></td></tr>
+    <tr><td class="blue bold">86dd</td><td class="cyan">wg0</td><td>ipv6_rcv</td><td class="cyan">IPv6</td></tr>
+  </table>
+  <div style="margin-top:14px">
+    <span class="agg-label">decoder: </span><span>0800=IPv4·86dd=IPv6·0806=ARP·8100=VLAN·886f=LLDP·88f7=PTP</span>
+  </div>
+  <div class="cmd">
+    <span class="line">$ ./ptype-watch --demo --sockets</span><br>
+    <span class="dim">-- AF_PACKET sockets (demo) --</span><br>
+    5 sockets&nbsp;&nbsp;<span class="green">3 raw</span>&nbsp;&nbsp;<span class="cyan">2 dgram</span>&nbsp;&nbsp;<span class="yellow">rmem 20.0 KiB</span><br>
+    <span class="dim">&nbsp;ffff9c0c0a1b2c3d&nbsp;&nbsp;3&nbsp;&nbsp;SOCK_RAW&nbsp;&nbsp;0003&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;Y&nbsp;&nbsp;8192&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;18432&nbsp;&nbsp;(ALL promisc)</span><br>
+    <span class="dim">&nbsp;ffff9c0c0a1b2c4e&nbsp;&nbsp;2&nbsp;&nbsp;SOCK_DGRAM 0800&nbsp;&nbsp;&nbsp;2&nbsp;&nbsp;Y&nbsp;&nbsp;4096&nbsp;&nbsp;1000&nbsp;&nbsp;19001&nbsp;&nbsp;(IPv4)</span><br>
+    <span class="dim">&nbsp;ffff9c0c0a1b2c5f&nbsp;&nbsp;2&nbsp;&nbsp;SOCK_RAW&nbsp;&nbsp;0806&nbsp;&nbsp;&nbsp;3&nbsp;&nbsp;N&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;19110&nbsp;&nbsp;(ARP)</span><br>
+    <span class="dim">&nbsp;ffff9c0c0a1b2c60&nbsp;&nbsp;1&nbsp;&nbsp;SOCK_RAW&nbsp;&nbsp;86dd&nbsp;&nbsp;&nbsp;1&nbsp;&nbsp;Y&nbsp;&nbsp;2048&nbsp;&nbsp;1000&nbsp;&nbsp;19220&nbsp;&nbsp;(IPv6)</span>
+  </div>
+  <div class="notes">
+    /proc/net/ptype → packet_type_seq_show (type %04x ntohs, device %-8s, function %ps)
+    /proc/net/packet → packet_seq_show (sk, refcnt, SOCK_RAW/DGRAM, proto, ifindex, running, rmem, uid, inode)
+    --json · --watch N · --file (tolera #) · --no-color · selftest 58 checks
+  </div>
+  <div class="prompt">$ ./ptype-watch --selftest → <span class="green">58 passed, 0 failed</span></div>
+</div>
+</body>
+</html>

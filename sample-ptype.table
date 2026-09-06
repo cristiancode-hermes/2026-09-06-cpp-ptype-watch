@@ -1,0 +1,18 @@
+# Synthetic dump of /proc/net/ptype + /proc/net/packet
+# Comments and blank lines must be tolerated by --file
+Type Device      Function
+0800          ip_rcv
+0004          llc_rcv [llc]
+0806          arp_rcv
+00fa          mctp_pkttype_receive
+86dd          ipv6_rcv
+8100 eth0     vlan_skb_recv
+88cc          eth_nodev
+0003          packet_rcv
+0806 wlan0    arp_rcv
+88f7          ptp_rcv [ptp]
+
+sk               RefCnt Type Proto  Iface R Rmem   User   Inode
+ffff9c0c0a1b2c3d  3      3    0003   0     1 8192   0      18432
+ffff9c0c0a1b2c4e  2      2    0800   2     1 4096   1000   19001
+ffff9c0c0a1b2c5f  2      3    0806   3     0 0      0      19110
